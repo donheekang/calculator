@@ -70,8 +70,8 @@
 <h2>사망보험금 계산기</h2>
 
 <form id="insuranceForm">
-    <label for="birthYear">출생연도 앞 두자리:</label>
-    <input type="number" id="birthYear" name="birthYear" placeholder="89" oninput="calculateAndDisplayAge()"><br><br>
+    <label for="birthYear">주민번호 앞 6자리:</label>
+    <input type="number" id="birthYear" name="birthYear" placeholder="890101" min="100000" max="999999"><br><br>
 
     <div class="age-display">나이: <span id="ageDisplay">0</span>세</div><br>
 
@@ -86,6 +86,9 @@
 
     <label for="share">지분율 (%):</label>
     <input type="number" id="share" name="share" min="0" max="100" placeholder="100"><br><br>
+
+    <label for="income">연소득 (₩):</label>
+    <input type="text" id="income" name="income" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
 
     <div id="assetsWrapper">
         <label>개인자산 (부동산 등) (₩):</label>
@@ -102,8 +105,8 @@
 <script>
 function calculateAndDisplayAge() {
   var birthYearInput = document.getElementById('birthYear').value;
-  if (birthYearInput.length == 2) {
-    var year = parseInt(birthYearInput, 10);
+  if (birthYearInput.length == 6) {
+    var year = parseInt(birthYearInput.substring(0, 2), 10);
     var currentYear = new Date().getFullYear();
     var century = (year > currentYear % 100) ? 1900 : 2000;
     var age = currentYear - (century + year);
@@ -117,32 +120,63 @@ function formatCurrencyField(input) {
   input.value = formattedValue;
 }
 
+document.getElementById('birthYear').addEventListener('input', calculateAndDisplayAge);
+
 document.getElementById('insuranceForm').onsubmit = function(event) {
     event.preventDefault();
 
-    var profit20 = parseFloat(document.getElementById('profit20').value.replace(/,/g, '')) * 0.2 || 0;
-    var profit21 = parseFloat(document.getElementById('profit21').value.replace(/,/g, '')) * 0.3 || 0;
-    var profit22 = parseFloat(document.getElementById('profit22').value.replace(/,/g, '')) * 0.5 || 0;
+    var profit20 = parseFloat(document.getElementById('profit20').value.replace(/,/g, '')) || 0;
+    var profit21 = parseFloat(document.getElementById('profit21').value.replace(/,/g, '')) || 0;
+    var profit22 = parseFloat(document.getElementById('profit22').value.replace(/,/g, '')) || 0;
     var age = parseFloat(document.getElementById('ageDisplay').textContent);
     var share = parseFloat(document.getElementById('share').value) / 100 || 0;
+    var income = parseFloat(document.getElementById('income').value.replace(/,/g, '')) || 0;
 
-    var totalProfit = (profit20 + profit21 + profit22);
-    var multiplier = age < 40 ? 25 : age >= 56 ? 10 : 15;
-    var profitWithMultiplierAndShare = totalProfit * multiplier * share;
+    // 각 보험사별 보험금 계산
+    var samsung = calculateSamsung(profit20, profit21, profit22, age, share);
+    var kyobo = calculateKyobo(profit22, income);
+    var shinhan = calculateShinhan(profit22);
+    var kukmin = calculateKukmin(profit20, profit21, profit22);
+    var hanhwa = calculateHanhwa(profit20, profit21, profit22);
 
-    var assetsTotal = calculateAssetsTotal();
-    var insuranceAmount = profitWithMultiplierAndShare + assetsTotal;
-
-    document.getElementById('result').textContent = '계산된 보험금: ' + formatCurrency(insuranceAmount) + '원';
+    // 결과 표시
+    document.getElementById('result').textContent = '삼성생명: ' + formatCurrency(samsung) + ' 원\n' +
+      '교보생명: ' + formatCurrency(kyobo) + ' 원\n' +
+      '신한생명: ' + formatCurrency(shinhan) + ' 원\n' +
+      '국민생명: ' + formatCurrency(kukmin) + ' 원\n' +
+      '한화생명: ' + formatCurrency(hanhwa) + ' 원';
 };
 
-function calculateAssetsTotal() {
-  var assetsInputs = document.querySelectorAll('.asset-input');
-  return Array.from(assetsInputs).reduce(function(sum, input) {
-    return sum + parseFloat(input.value.replace(/,/g, '').replace(/[^0-9,-]/g, '')) || 0;
-  }, 0);
+function calculateSamsung(profit20, profit21, profit22, age, share) {
+  var multiplier = (profit20 * 0.2 + profit21 * 0.3 + profit22 * 0.5) * (age < 40 ? 25 : age >= 56 ? 10 : 15) * share;
+  return multiplier;
 }
 
+function calculateKyobo(profit22, income) {
+  var multiplier = profit22 * 5 + income * 10;
+  return multiplier;
+}
+
+function calculateShinhan(profit22) {
+  var multiplier = profit22 * 0.3;
+  return multiplier;
+}
+
+function calculateKukmin(profit20, profit21, profit22) {
+  var multiplier = ((profit20 + profit21 + profit22) / 3) * 15;
+  return multiplier;
+}
+
+function calculateHanhwa(profit20, profit21, profit22) {
+  var multiplier = (profit20 + profit21 + profit22) * 10;
+  return multiplier;
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
+}
+
+// 개인자산 입력 필드 동적 생성
 var assetsInputsContainer = document.getElementById('assetsInputs');
 for (let i = 0; i < 10; i++) {
   var input = document.createElement('input');
@@ -151,10 +185,6 @@ for (let i = 0; i < 10; i++) {
   input.placeholder = '0';
   input.onkeyup = function() { formatCurrencyField(input); };
   assetsInputsContainer.appendChild(input);
-}
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
 }
 </script>
 
