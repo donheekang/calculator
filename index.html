@@ -93,7 +93,8 @@
     <div id="assetsWrapper">
         <label>개인자산 (부동산 등) (₩):</label>
         <div class="assets-inputs" id="assetsInputs">
-            <!-- 여기에 개인자산 입력 필드들이 생성됩니다 -->
+            <!-- 개인자산 입력 필드들이 생성됩니다 -->
+            <input type="text" class="asset-input" placeholder="0" onkeyup="formatCurrencyField(this)">
         </div>
     </div>
 
@@ -132,59 +133,54 @@ document.getElementById('insuranceForm').onsubmit = function(event) {
     var share = parseFloat(document.getElementById('share').value) / 100 || 0;
     var income = parseFloat(document.getElementById('income').value.replace(/,/g, '')) || 0;
 
-    // 각 보험사별 보험금 계산
-    var samsung = calculateSamsung(profit20, profit21, profit22, age, share);
-    var kyobo = calculateKyobo(profit22, income);
-    var shinhan = calculateShinhan(profit22);
-    var kukmin = calculateKukmin(profit20, profit21, profit22);
-    var hanhwa = calculateHanhwa(profit20, profit21, profit22);
+    var totalAssets = 0;
+    var assetInputs = document.getElementsByClassName('asset-input');
+    for (var i = 0; i < assetInputs.length; i++) {
+        totalAssets += parseFloat(assetInputs[i].value.replace(/,/g, '')) || 0;
+    }
 
-    // 결과 표시
-    document.getElementById('result').textContent = '삼성생명: ' + formatCurrency(samsung) + ' 원\n' +
-      '교보생명: ' + formatCurrency(kyobo) + ' 원\n' +
-      '신한생명: ' + formatCurrency(shinhan) + ' 원\n' +
-      '국민생명: ' + formatCurrency(kukmin) + ' 원\n' +
-      '한화생명: ' + formatCurrency(hanhwa) + ' 원';
+    var samsungLife = calculateSamsung(profit20, profit21, profit22, age, share) + totalAssets;
+    var kyoboLife = calculateKyobo(profit22, income, share) + totalAssets;
+    var shinhanBank = calculateShinhan(profit22, share) + totalAssets;
+    var kukminLife = calculateKukmin(profit20, profit21, profit22, share) + totalAssets;
+    var hanhwaLife = calculateHanhwa(profit20, profit21, profit22, share) + totalAssets;
+
+    document.getElementById('result').textContent = '삼성생명: ' + formatCurrency(samsungLife) + ' 원\n' +
+      '교보생명: ' + formatCurrency(kyoboLife) + ' 원\n' +
+      '신한생명: ' + formatCurrency(shinhanBank) + ' 원\n' +
+      '국민생명: ' + formatCurrency(kukminLife) + ' 원\n' +
+      '한화생명: ' + formatCurrency(hanhwaLife) + ' 원';
 };
 
 function calculateSamsung(profit20, profit21, profit22, age, share) {
-  var multiplier = (profit20 * 0.2 + profit21 * 0.3 + profit22 * 0.5) * (age < 40 ? 25 : age >= 56 ? 10 : 15) * share;
-  return multiplier;
+  var ageMultiplier = age < 40 ? 25 : age >= 56 ? 10 : 15;
+  var profit = (profit20 * 0.2 + profit21 * 0.3 + profit22 * 0.5) * ageMultiplier;
+  return profit * share;
 }
 
-function calculateKyobo(profit22, income) {
-  var multiplier = profit22 * 5 + income * 10;
-  return multiplier;
+function calculateKyobo(profit22, income, share) {
+  var profit = (profit22 * 5) + (income * 10);
+  return profit * share;
 }
 
-function calculateShinhan(profit22) {
-  var multiplier = profit22 * 0.3;
-  return multiplier;
+function calculateShinhan(profit22, share) {
+  var profit = profit22 * 0.3;
+  return profit * share;
 }
 
-function calculateKukmin(profit20, profit21, profit22) {
-  var multiplier = ((profit20 + profit21 + profit22) / 3) * 15;
-  return multiplier;
+function calculateKukmin(profit20, profit21, profit22, share) {
+  var averageProfit = (profit20 + profit21 + profit22) / 3;
+  var profit = averageProfit * 15;
+  return profit * share;
 }
 
-function calculateHanhwa(profit20, profit21, profit22) {
-  var multiplier = (profit20 + profit21 + profit22) * 10;
-  return multiplier;
+function calculateHanhwa(profit20, profit21, profit22, share) {
+  var totalProfit = (profit20 + profit21 + profit22) * 10;
+  return totalProfit * share;
 }
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
-}
-
-// 개인자산 입력 필드 동적 생성
-var assetsInputsContainer = document.getElementById('assetsInputs');
-for (let i = 0; i < 10; i++) {
-  var input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'asset-input';
-  input.placeholder = '0';
-  input.onkeyup = function() { formatCurrencyField(input); };
-  assetsInputsContainer.appendChild(input);
 }
 </script>
 
