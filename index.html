@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사망보험금 계산기</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+  h2 {
+    color: #4a90e2;
+    text-align: center;
+  }
+  form {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  label {
+    display: block;
+    margin: 10px 0 5px;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+  }
+  input[type="submit"] {
+    background-color: #4a90e2;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+  }
+  input[type="submit"]:hover {
+    background-color: #3a78c3;
+  }
+  .age-display, #result {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 1.1em;
+  }
+  #result {
+    color: #4a90e2;
+  }
+  .assets-inputs {
+    margin-top: 10px;
+  }
+  .asset-input {
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+<h2>사망보험금 및 급여 계산기</h2>
+
+<form id="insuranceForm">
+    <label for="birthYear">주민앞2자리:</label>
+    <input type="number" id="birthYear" name="birthYear" placeholder="89" oninput="calculateAndDisplayAge()"><br><br>
+
+    <div class="age-display">나이: <span id="ageDisplay">0</span>세</div><br>
+
+    <label for="profit20">20년도 당기순이익 (₩):</label>
+    <input type="text" id="profit20" name="profit20" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
+
+    <label for="profit21">21년도 당기순이익 (₩):</label>
+    <input type="text" id="profit21" name="profit21" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
+
+    <label for="profit22">22년도 당기순이익 (₩):</label>
+    <input type="text" id="profit22" name="profit22" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
+
+    <label for="share">지분율 (%):</label>
+    <input type="number" id="share" name="share" min="0" max="100" placeholder="100"><br><br>
+
+    <div id="assetsWrapper">
+        <label>개인자산 (부동산 등) (₩):</label>
+        <div class="assets-inputs" id="assetsInputs">
+            <!-- 여기에 개인자산 입력 필드들이 생성됩니다 -->
+        </div>
+    </div>
+
+    <input type="submit" value="보험금 계산하기">
+</form>
+
+<p id="result"></p>
+
+<script>
+function calculateAndDisplayAge() {
+  var birthYearInput = document.getElementById('birthYear').value;
+  if (birthYearInput.length == 2) {
+    var year = parseInt(birthYearInput, 10);
+    var currentYear = new Date().getFullYear();
+    var century = (year > currentYear % 100) ? 1900 : 2000;
+    var age = currentYear - (century + year);
+    document.getElementById('ageDisplay').textContent = age;
+  }
+}
+
+function formatCurrencyField(input) {
+  var value = input.value.replace(/[^\d,]/g, '').replace(/,/g, '');
+  var formattedValue = new Intl.NumberFormat('ko-KR').format(parseInt(value, 10));
+  input.value = formattedValue;
+}
+
+document.getElementById('insuranceForm').onsubmit = function(event) {
+    event.preventDefault();
+
+    var profit20 = Number(document.getElementById('profit20').value.replace(/,/g, '')) * 0.2;
+    var profit21 = Number(document.getElementById('profit21').value.replace(/,/g, '')) * 0.3;
+    var profit22 = Number(document.getElementById('profit22').value.replace(/,/g, '')) * 0.5;
+    var age = Number(document.getElementById('ageDisplay').textContent);
+    var share = Number(document.getElementById('share').value) / 100;
+
+    var totalProfit = (profit20 + profit21 + profit22);
+    var multiplier = age < 40 ? 25 : age >= 56 ? 10 : 15;
+    var profitWithMultiplierAndShare = totalProfit * multiplier * share;
+
+    var assetsTotal = calculateAssetsTotal();
+    var insuranceAmount = profitWithMultiplierAndShare + assetsTotal;
+
+    document.getElementById('result').textContent = '계산된 보험금: ' + formatCurrency(insuranceAmount) + '원';
+};
+
+function calculateAssetsTotal() {
+  var assetsInputs = document.querySelectorAll('.asset-input');
+  return Array.from(assetsInputs).reduce(function(sum, input) {
+    return sum + Number(input.value.replace(/,/g, '').replace(/[^0-9]/g, ''));
+  }, 0);
+}
+
+var assetsInputsContainer = document.getElementById('assetsInputs');
+for (let i = 0; i < 10; i++) {
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'asset-input';
+  input.placeholder = '0';
+  input.onkeyup = function() { formatCurrencyField(input); };
+  assetsInputsContainer.appendChild(input);
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
+}
+</script>
+
+</body>
+</html>
