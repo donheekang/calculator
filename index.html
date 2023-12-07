@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>사망보험금 계산기</title>
+<title>사망보험금 및 급여 계산기</title>
 <style>
   body {
     font-family: 'Arial', sans-serif;
@@ -70,7 +70,7 @@
 <h2>사망보험금 및 급여 계산기</h2>
 
 <form id="insuranceForm">
-    <label for="birthYear">주민앞2자리:</label>
+    <label for="birthYear">출생연도 끝 두 자리:</label>
     <input type="number" id="birthYear" name="birthYear" placeholder="89" oninput="calculateAndDisplayAge()"><br><br>
 
     <div class="age-display">나이: <span id="ageDisplay">0</span>세</div><br>
@@ -112,19 +112,19 @@ function calculateAndDisplayAge() {
 }
 
 function formatCurrencyField(input) {
-  var value = input.value.replace(/[^\d,]/g, '').replace(/,/g, '');
-  var formattedValue = new Intl.NumberFormat('ko-KR').format(parseInt(value, 10));
+  var value = input.value.replace(/[^\d,-]/g, '');
+  var formattedValue = new Intl.NumberFormat('ko-KR').format(parseFloat(value.replace(/,/g, '')));
   input.value = formattedValue;
 }
 
 document.getElementById('insuranceForm').onsubmit = function(event) {
     event.preventDefault();
 
-    var profit20 = Number(document.getElementById('profit20').value.replace(/,/g, '')) * 0.2;
-    var profit21 = Number(document.getElementById('profit21').value.replace(/,/g, '')) * 0.3;
-    var profit22 = Number(document.getElementById('profit22').value.replace(/,/g, '')) * 0.5;
-    var age = Number(document.getElementById('ageDisplay').textContent);
-    var share = Number(document.getElementById('share').value) / 100;
+    var profit20 = parseFloat(document.getElementById('profit20').value.replace(/,/g, '')) * 0.2 || 0;
+    var profit21 = parseFloat(document.getElementById('profit21').value.replace(/,/g, '')) * 0.3 || 0;
+    var profit22 = parseFloat(document.getElementById('profit22').value.replace(/,/g, '')) * 0.5 || 0;
+    var age = parseFloat(document.getElementById('ageDisplay').textContent);
+    var share = parseFloat(document.getElementById('share').value) / 100 || 0;
 
     var totalProfit = (profit20 + profit21 + profit22);
     var multiplier = age < 40 ? 25 : age >= 56 ? 10 : 15;
@@ -139,7 +139,7 @@ document.getElementById('insuranceForm').onsubmit = function(event) {
 function calculateAssetsTotal() {
   var assetsInputs = document.querySelectorAll('.asset-input');
   return Array.from(assetsInputs).reduce(function(sum, input) {
-    return sum + Number(input.value.replace(/,/g, '').replace(/[^0-9]/g, ''));
+    return sum + parseFloat(input.value.replace(/,/g, '').replace(/[^0-9,-]/g, '')) || 0;
   }, 0);
 }
 
