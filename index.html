@@ -71,7 +71,7 @@
 
 <form id="insuranceForm">
     <label for="birthYear">주민번호 앞 6자리:</label>
-    <input type="number" id="birthYear" name="birthYear" placeholder="890101" min="100000" max="999999"><br><br>
+    <input type="number" id="birthYear" name="birthYear" placeholder="0" min="100000" max="999999"><br><br>
 
     <div class="age-display">나이: <span id="ageDisplay">0</span>세</div><br>
 
@@ -85,7 +85,7 @@
     <input type="text" id="profit22" name="profit22" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
 
     <label for="share">지분율 (%):</label>
-    <input type="number" id="share" name="share" min="0" max="100" placeholder="100"><br><br>
+    <input type="number" id="share" name="share" min="0" max="100" placeholder="0"><br><br>
 
     <label for="income">연소득 (₩):</label>
     <input type="text" id="income" name="income" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
@@ -104,24 +104,31 @@
 <p id="result"></p>
 
 <script>
-function calculateAndDisplayAge() {
-  var birthYearInput = document.getElementById('birthYear').value;
-  if (birthYearInput.length == 6) {
-    var year = parseInt(birthYearInput.substring(0, 2), 10);
-    var currentYear = new Date().getFullYear();
-    var century = (year > currentYear % 100) ? 1900 : 2000;
-    var age = currentYear - (century + year);
-    document.getElementById('ageDisplay').textContent = age;
-  }
-}
-
-function formatCurrencyField(input) {
-  var value = input.value.replace(/[^\d,-]/g, '');
-  var formattedValue = new Intl.NumberFormat('ko-KR').format(parseFloat(value.replace(/,/g, '')));
-  input.value = formattedValue;
-}
-
-document.getElementById('birthYear').addEventListener('input', calculateAndDisplayAge);
+    function calculateAndDisplayAge() {
+      var birthYearInput = document.getElementById('birthYear').value;
+      if (birthYearInput.length == 6) {
+        var year = parseInt(birthYearInput.substring(0, 2), 10);
+        var month = parseInt(birthYearInput.substring(2, 4), 10);
+        var day = parseInt(birthYearInput.substring(4, 6), 10);
+        var currentDate = new Date();
+        var currentYear = currentDate.getFullYear();
+        var currentMonth = currentDate.getMonth() + 1;
+        var currentDay = currentDate.getDate();
+    
+        var century = (year >= currentYear % 100) ? 1900 : 2000;
+        year = century + year;
+    
+        var age = currentYear - year;
+        // 6개월 이상 차이가 나는지 계산
+        if ((currentMonth - month > 6) || (currentMonth - month === 6 && currentDay >= day)) {
+            age += 1;
+        }
+    
+        document.getElementById('ageDisplay').textContent = age;
+      }
+    }
+    
+    document.getElementById('birthYear').addEventListener('input', calculateAndDisplayAge);
 
 document.getElementById('insuranceForm').onsubmit = function(event) {
     event.preventDefault();
@@ -186,3 +193,4 @@ function formatCurrency(value) {
 
 </body>
 </html>
+
