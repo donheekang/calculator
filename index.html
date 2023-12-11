@@ -185,12 +185,21 @@ function calculateHanhwa(profit20, profit21, profit22, share) {
   var totalProfit = (profit20 + profit21 + profit22) * 10;
   return totalProfit * share;
 }
+function formatCurrencyField(inputField) {
+      var value = inputField.value;
+      value = value.replace(/,/g, ''); // 기존의 콤마 제거
+      value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 새로운 콤마 추가
+      inputField.value = value;
+    }
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
-}
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
+    }
+</script>
+
 </script>
 
 </body>
 </html>
+
 
