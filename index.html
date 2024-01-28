@@ -1,150 +1,129 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>사망보험금 계산기</title>
-<style>
-  body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 20px;
-    color: #333;
-  }
-  h2 {
-    color: #4a90e2;
-    text-align: center;
-  }
-  form {
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  label {
-    display: block;
-    margin: 10px 0 5px;
-  }
-  input[type="text"], input[type="number"] {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    box-sizing: border-box;
-  }
-  input[type="submit"] {
-    background-color: #4a90e2;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: block;
-    width: 100%;
-    margin-top: 20px;
-  }
-  input[type="submit"]:hover {
-    background-color: #3a78c3;
-  }
-  .age-display, #result {
-    margin-top: 10px;
-    text-align: center;
-    font-size: 1.1em;
-  }
-  #result {
-    color: #4a90e2;
-  }
-  .assets-inputs {
-    margin-top: 10px;
-  }
-  .asset-input {
-    margin-bottom: 10px;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보험나이계산기</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h2 {
+            color: #4a90e2;
+            text-align: center;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+        }
+        input[type="submit"]:hover {
+            background-color: #3a78c3;
+        }
+        .age-display, #result {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        #result {
+            color: #4a90e2;
+        }
+        .assets-inputs {
+            margin-top: 10px;
+        }
+        .asset-input {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-<h2>사망보험금 계산기</h2>
+    <h2>사망보험금 계산기</h2>
 
-<form id="insuranceForm">
-    <label for="birthYear">주민번호 앞 6자리:</label>
-    <input type="number" id="birthYear" name="birthYear" placeholder="0" min="100000" max="999999"><br><br>
+    <form id="insuranceForm">
+        <label for="birthYear">주민번호 앞 6자리:</label>
+        <input type="number" id="birthYear" name="birthYear" placeholder="0" min="100000" max="999999"><br><br>
 
-    <div class="age-display">나이: <span id="ageDisplay">0</span>세</div><br>
+        <div class="age-display">나이: <span id="ageDisplay">0세</span></div><br>
 
-    <label for="profit20">20년도 당기순이익 (₩):</label>
-    <input type="text" id="profit20" name="profit20" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
+        <!-- 여기에 추가적인 입력 필드들을 포함시킬 수 있습니다. -->
 
-    <label for="profit21">21년도 당기순이익 (₩):</label>
-    <input type="text" id="profit21" name="profit21" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
+        <input type="submit" value="보험금 계산하기">
+    </form>
 
-    <label for="profit22">22년도 당기순이익 (₩):</label>
-    <input type="text" id="profit22" name="profit22" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
+    <p id="result"></p>
 
-    <label for="share">지분율 (%):</label>
-    <input type="number" id="share" name="share" min="0" max="100" placeholder="0"><br><br>
+    <script>
+        function calculateAndDisplayAge() {
+            var birthYearInput = document.getElementById('birthYear').value;
+            if (birthYearInput.length == 6) {
+                var birthYear = parseInt(birthYearInput.substring(0, 2), 10);
+                var birthMonth = parseInt(birthYearInput.substring(2, 4), 10);
+                var birthDay = parseInt(birthYearInput.substring(4, 6), 10);
+                
+                var currentDate = new Date();
+                var currentYear = currentDate.getFullYear();
+                var currentMonth = currentDate.getMonth() + 1;
+                var currentDay = currentDate.getDate();
 
-    <label for="income">연소득 (₩):</label>
-    <input type="text" id="income" name="income" placeholder="0" onkeyup="formatCurrencyField(this)"><br><br>
+                var century = (birthYear < currentYear % 100) ? 2000 : 1900;
+                birthYear = century + birthYear;
 
-    <div id="assetsWrapper">
-        <label>개인자산 (부동산 등) (₩):</label>
-        <div class="assets-inputs" id="assetsInputs">
-            <input type="text" class="asset-input" placeholder="0" onkeyup="formatCurrencyField(this)">
-        </div>
-    </div>
+                var age = currentYear - birthYear;
+                if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+                    age -= 1;
+                }
 
-    <input type="submit" value="보험금 계산하기">
-</form>
+                var insuranceAgeChangeDate = new Date(birthYear + age, birthMonth + 6 - 1, birthDay);
+                var insuranceAge = age;
+                if (currentDate >= insuranceAgeChangeDate) {
+                    insuranceAge += 1;
+                    insuranceAgeChangeDate.setFullYear(insuranceAgeChangeDate.getFullYear() + 1);
+                }
 
-<p id="result"></p>
+                var changeDateText = insuranceAgeChangeDate.toISOString().split('T')[0];
 
-<script>
-    function calculateAndDisplayAge() {
-        var birthYearInput = document.getElementById('birthYear').value;
-        if (birthYearInput.length == 6) {
-            var birthYear = parseInt(birthYearInput.substring(0, 2), 10);
-            var birthMonth = parseInt(birthYearInput.substring(2, 4), 10);
-            var birthDay = parseInt(birthYearInput.substring(4, 6), 10);
-            
-            var currentDate = new Date();
-            var currentYear = currentDate.getFullYear();
-            var currentMonth = currentDate.getMonth() + 1;
-            var currentDay = currentDate.getDate();
-
-            var century = (birthYear < currentYear % 100) ? 2000 : 1900;
-            birthYear = century + birthYear;
-
-            var age = currentYear - birthYear;
-
-            if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
-                age -= 1;
+                document.getElementById('ageDisplay').textContent = "만 나이: " + age + "세, 보험나이: " + insuranceAge + "세 (다음 변경일: " + changeDateText + ")";
             }
-
-            var sixMonthsAgo = new Date(currentDate);
-            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-            var insuranceAge = age;
-            if (new Date(birthYear + age, birthMonth - 1, birthDay) <= sixMonthsAgo) {
-                insuranceAge += 1;
-            }
-
-            document.getElementById('ageDisplay').textContent = "만 나이: " + age + "세, 보험나이: " + insuranceAge ;
         }
-    }
 
-    document.getElementById('birthYear').addEventListener('input', calculateAndDisplayAge);
+        document.getElementById('birthYear').addEventListener('input', calculateAndDisplayAge);
 
-    document.getElementById('insuranceForm').onsubmit = function(event) {
-        event.preventDefault();
+        document.getElementById('insuranceForm').onsubmit = function(event) {
+            event.preventDefault();
+            // 폼 제출 처리 및 보험금 계산 로직
+        };
 
-        // 폼 제출 처리 및 보험금 계산 코드
-    };
-
-    // 계산 함수들과 포매팅 함수
-</script>
+        // 여기에 필요한 계산 함수들과 값 포매팅 함수를 추가할 수 있습니다.
+    </script>
 </body>
 </html>
