@@ -58,12 +58,6 @@
         #result {
             color: #4a90e2;
         }
-        .assets-inputs {
-            margin-top: 10px;
-        }
-        .asset-input {
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
@@ -74,8 +68,6 @@
         <input type="number" id="birthYear" name="birthYear" placeholder="0" min="100000" max="999999"><br><br>
 
         <div class="age-display">나이: <span id="ageDisplay">0세</span></div><br>
-
-        <!-- 여기에 추가적인 입력 필드들을 포함시킬 수 있습니다. -->
 
         <input type="submit" value="보험나이계산">
     </form>
@@ -99,12 +91,17 @@
                 birthYear = century + birthYear;
 
                 var age = currentYear - birthYear;
-                if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+                if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay <= birthDay)) {
                     age -= 1;
                 }
 
-                var insuranceAgeChangeDate = new Date(birthYear + age, birthMonth + 6 - 1, birthDay);
                 var insuranceAge = age;
+                var insuranceAgeChangeDate = new Date(birthYear + age, birthMonth - 1, birthDay);
+                insuranceAgeChangeDate.setMonth(insuranceAgeChangeDate.getMonth() + 6);
+
+                // 하루 차이로 변경일 조정
+                insuranceAgeChangeDate.setDate(insuranceAgeChangeDate.getDate() + 1);
+
                 if (currentDate >= insuranceAgeChangeDate) {
                     insuranceAge += 1;
                     insuranceAgeChangeDate.setFullYear(insuranceAgeChangeDate.getFullYear() + 1);
@@ -112,7 +109,7 @@
 
                 var changeDateText = insuranceAgeChangeDate.toISOString().split('T')[0];
 
-                document.getElementById('ageDisplay').textContent = "만 나이: " + age + "세, 보험나이: " + insuranceAge + "세 (다음 변경일: " + changeDateText + ")";
+                document.getElementById('ageDisplay').textContent = "만 나이: " + age + "세, 보험나이: " + insuranceAge + "세 (변경일 예정: " + changeDateText + ")";
             }
         }
 
